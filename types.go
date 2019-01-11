@@ -16,9 +16,9 @@ func InterfaceOf(ps ...interface{}) []interface{} {
 	return ps
 }
 
-func assert(b bool, text string) {
+func assert(b bool, text string, args ...interface{}) {
 	if b {
-		panic(text)
+		panic(fmt.Sprintf(text, args...))
 	}
 }
 

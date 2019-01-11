@@ -2,7 +2,6 @@ package pipe
 
 import (
 	"fmt"
-	"github.com/rs/zerolog/log"
 	"reflect"
 )
 
@@ -87,6 +86,14 @@ func (t *_func) Every(fn func(v interface{}) bool) bool {
 	return true
 }
 
+func (t *_func) MustNotError() {
+	t.Each(func(_ int, v interface{}) {
+		if IsError(v) {
+			panic(v.(error).Error())
+		}
+	})
+}
+
 func (t *_func) FilterError() *_func {
 	return t.Filter(func(_ int, v interface{}) bool {
 		return !IsError(v)
@@ -115,22 +122,35 @@ func (t *_func) ToSlice() *_func {
 	return t
 }
 
-func (t *_func) Each(fn interface{}) interface{} {
+func (t *_func) Each(fn interface{}) {
 	t.assert(fn)
-
 	_fn := reflect.ValueOf(fn)
-	for i, p := range t.params {
-		if rs := _fn.Call([]reflect.Value{reflect.ValueOf(i), p}); len(rs) > 0 && rs[0].Interface() != nil {
-			log.Error().
-				Interface("call_info", rs).
-				Interface("call_params", p.Interface()).
-				Str("call_func", _fn.Type().String()).
-				Msg("pipe Each error")
-			return rs
-		}
-	}
+	_t := _fn.Type()
+	assert(_t.NumIn() > 2, "the func input num is more than 2(%d)", _t.NumIn())
+	assert(_t.NumOut() != 0, "the func output num is not equal(%d)", _t.NumOut())
 
-	return nil
+	for i, p := range t.params {
+		if p.Kind() == reflect.Invalid {
+			if _t.NumIn() == 1 {
+				p = reflect.New(_t.In(0)).Elem()
+			}
+
+			if _t.NumIn() == 2 {
+				p = reflect.New(_t.In(1)).Elem()
+			}
+		}
+
+		var _pi []reflect.Value
+		if _t.NumIn() == 1 {
+			_pi = []reflect.Value{p}
+		}
+
+		if _t.NumIn() == 2 {
+			_pi = []reflect.Value{reflect.ValueOf(i), p}
+		}
+
+		_fn.Call(_pi)
+	}
 }
 
 func DataRange(s, e, t int) *_func {

@@ -81,6 +81,14 @@ func TestEach(t *testing.T) {
 	pipe.Data(1, 2, 3, 4).Each(func(a ...interface{}) {
 		fmt.Println(a)
 	})
+
+	pipe.Data(1, 2, 3, 4).Each(func(i int, a interface{}) {
+		fmt.Println(i, a)
+	})
+
+	pipe.Data(1, 2, 3, 4).Each(func(a interface{}) {
+		fmt.Println(a)
+	})
 }
 
 func TestPipe(t *testing.T) {
@@ -100,4 +108,9 @@ func TestIsError(t *testing.T) {
 	fmt.Println(pipe.IsError(errors.New("")))
 	fmt.Println(pipe.IsError(nil))
 
+}
+
+func TestError(t *testing.T) {
+	//pipe.Data(1, 2, 3, errors.New("sss")).MustNotError()
+	pipe.Data(1, 2, 3, nil).MustNotError()
 }
