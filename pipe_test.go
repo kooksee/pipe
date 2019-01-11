@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/kooksee/pipe"
+	"strings"
 	"testing"
 )
 
@@ -87,16 +88,23 @@ func TestArray(t *testing.T) {
 
 func TestReduce(t *testing.T) {
 
-	pipe.Data(t1{A: "dd", b: 1}, t1{A: "sss", b: 2}).Map(func(i int, v interface{}) interface{} {
-		_t := v.(t1)
-		_t.b = 100000
-		return _t
-	}).Reduce(func(s t1, v t1) int {
-		return s.b + v.b
-	}).Pipe(func(d int) int {
-		fmt.Println("pppp", d)
-		return d
-	}).P("test reduce")
+	pipe.Data(t1{A: "dd", b: 1}, t1{A: "sss", b: 2}).Map(func(v t1) t1 {
+		v.b = 100000
+		return v
+	}).Reduce(func(s t1, v t1) t1 {
+		return t1{b: s.b + v.b, A: s.A + v.A}
+	}).Each(func(a interface{}) {
+		fmt.Println(a)
+	})
+
+	pipe.Data(t1{A: "dd", b: 1}, t1{A: "sss", b: 2}, t1{A: "sss", b: 2}).Map(func(i int, v t1) t1 {
+		v.b = 100000
+		return v
+	}).Reduce(func(s t1, v t1) t1 {
+		return t1{b: s.b + v.b, A: s.A + v.A}
+	}).Each(func(a interface{}) {
+		fmt.Println(a)
+	})
 }
 
 func TestEach(t *testing.T) {
@@ -135,4 +143,13 @@ func TestIsError(t *testing.T) {
 func TestError(t *testing.T) {
 	//pipe.Data(1, 2, 3, errors.New("sss")).MustNotError()
 	pipe.Data(1, 2, 3, nil).MustNotError()
+
+}
+
+func TestToData(t *testing.T) {
+	a := "0 */2 * * * *"
+	fmt.Println(pipe.Data(strings.Split(a, "*")[1]).ToData().String())
+	fmt.Println(pipe.DataFromArray(strings.Split(a, "*")).ToData().String())
+	fmt.Println(pipe.DataFromArray(strings.Split(a, "*")).ToData().Json())
+	fmt.Println(pipe.Data(1, 2, 3, "", nil, &a).ToData().Json())
 }

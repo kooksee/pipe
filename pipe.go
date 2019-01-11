@@ -17,7 +17,7 @@ func (t *_func) Pipe(fn interface{}) *_func {
 
 	var _res []reflect.Value
 	for i, p := range t.params {
-		if p.Kind() == reflect.Invalid {
+		if !p.IsValid() {
 			p = reflect.New(_t.In(i)).Elem()
 		}
 		_res = append(_res, p)
@@ -44,6 +44,10 @@ func (t *_func) P(tags ...string) {
 	fmt.Println(_p)
 }
 
+func (t *_func) ToData() *_data {
+	return &_data{_values: t.params}
+}
+
 func (t *_func) Map(fn interface{}) *_func {
 	t.assertFn(fn)
 
@@ -54,7 +58,7 @@ func (t *_func) Map(fn interface{}) *_func {
 
 	var _res []reflect.Value
 	for i, p := range t.params {
-		if p.Kind() == reflect.Invalid {
+		if !p.IsValid() {
 			if _t.NumIn() == 1 {
 				p = reflect.New(_t.In(0)).Elem()
 			}
@@ -76,7 +80,7 @@ func (t *_func) Map(fn interface{}) *_func {
 		_r := _fn.Call(_pi)
 		assert(len(_r) != 1, "the func callback output num is not equal 1(%d)", len(_r))
 
-		if _r[0].Kind() == reflect.Invalid {
+		if !p.IsValid() {
 			_r[0] = reflect.New(_t.Out(0)).Elem()
 		}
 
@@ -90,20 +94,37 @@ func (t *_func) Reduce(fn interface{}) *_func {
 	t.assertFn(fn)
 
 	_fn := reflect.ValueOf(fn)
+	_t := _fn.Type()
+	assert(_t.NumIn() != 2, "the func input num is more than 2(%d)", _t.NumIn())
+	assert(_t.NumOut() != 1, "the func output num is not equal 1(%d)", _t.NumOut())
+	assert(_t.In(0) != _t.In(1) || _t.In(1) != _t.Out(0), "the func input type and output type is not match(%s,%s,%s)", _t.In(0), _t.In(1), _t.Out(0))
+
+	if len(t.params) == 0 {
+		return &_func{}
+	}
+
 	if len(t.params) < 2 {
+		if !t.params[0].IsValid() {
+			t.params[0] = reflect.New(_t.In(0).Elem())
+		}
 		return &_func{params: t.params}
 	}
 
-	rs := _fn.Call([]reflect.Value{t.params[0], t.params[1]})
-	assert(len(rs) != 1, "must return one value")
-
-	_res := rs[0]
-	for i := 2; i < len(t.params); i++ {
-		rs = _fn.Call([]reflect.Value{_res, t.params[i]})
-		assert(len(rs) != 1, "must return one value")
-		_res = rs[0]
+	if len(t.params) < 3 {
+		if !t.params[1].IsValid() {
+			t.params[1] = reflect.New(_t.In(0).Elem())
+		}
+		return &_func{params: _fn.Call([]reflect.Value{t.params[0], t.params[1]})}
 	}
-	return &_func{params: []reflect.Value{_res}}
+
+	_res := _fn.Call([]reflect.Value{t.params[0], t.params[1]})
+	for i := 2; i < len(t.params); i++ {
+		if !t.params[i].IsValid() {
+			t.params[i] = reflect.New(_t.In(0).Elem())
+		}
+		_res = _fn.Call([]reflect.Value{_res[0], t.params[i]})
+	}
+	return &_func{params: _res}
 }
 
 func (t *_func) Any(fn func(v interface{}) bool) bool {
@@ -129,11 +150,15 @@ func (t *_func) Every(fn func(v interface{}) bool) bool {
 }
 
 func (t *_func) MustNotError() {
-	t.Each(func(v interface{}) {
-		if IsError(v) {
-			panic(v.(error).Error())
+	for _, p := range t.params {
+		if p.Kind() == reflect.Invalid {
+			continue
 		}
-	})
+
+		if IsError(p.Interface()) {
+			panic(p.Interface().(error).Error())
+		}
+	}
 }
 
 func (t *_func) FilterError() *_func {
@@ -153,7 +178,7 @@ func (t *_func) Filter(fn interface{}) *_func {
 
 	var vs []reflect.Value
 	for i, p := range t.params {
-		if p.Kind() == reflect.Invalid {
+		if !p.IsValid() {
 			if _t.NumIn() == 1 {
 				p = reflect.New(_t.In(0)).Elem()
 			}
@@ -174,7 +199,7 @@ func (t *_func) Filter(fn interface{}) *_func {
 
 		_r := _fn.Call(_pi)
 		assert(len(_r) != 1, "the func callback output num is not equal 1(%d)", len(_r))
-		assert(_r[0].Kind() == reflect.Invalid, "the func callback output is nil")
+		assert(!_r[0].IsValid(), "the func callback output is nil")
 
 		if _r[0].Bool() {
 			vs = append(vs, _r[0])
@@ -187,6 +212,7 @@ func (t *_func) Filter(fn interface{}) *_func {
 func (t *_func) ToSlice() *_func {
 	var _ps []reflect.Value
 	_ds := t.params[0]
+
 	for i := 0; i < _ds.Len(); i++ {
 		_ps = append(_ps, _ds.Index(i))
 	}
@@ -203,7 +229,7 @@ func (t *_func) Each(fn interface{}) {
 	assert(_t.NumOut() != 0, "the func output num is not equal 0(%d)", _t.NumOut())
 
 	for i, p := range t.params {
-		if p.Kind() == reflect.Invalid {
+		if !p.IsValid() {
 			if _t.NumIn() == 1 {
 				p = reflect.New(_t.In(0)).Elem()
 			}
@@ -234,6 +260,10 @@ func DataRange(s, e, t int) *_func {
 	return &_func{
 		params: _ps,
 	}
+}
+
+func DataFromArray(ps interface{}) *_func {
+	return DataArray(ps)
 }
 
 func DataArray(ps interface{}) *_func {
