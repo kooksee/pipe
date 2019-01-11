@@ -1,8 +1,16 @@
 package pipe
 
 import (
+	"fmt"
 	"reflect"
+	"strconv"
 )
+
+func ToInt(p string) int {
+	r, err := strconv.Atoi(p)
+	assert(err != nil, fmt.Sprintf("can not convert %s to int,error(%s)", p, err.Error()))
+	return r
+}
 
 func InterfaceOf(ps ...interface{}) []interface{} {
 	return ps

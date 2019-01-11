@@ -119,7 +119,6 @@ func (t *_func) Each(fn interface{}) interface{} {
 	t.assert(fn)
 
 	_fn := reflect.ValueOf(fn)
-	fmt.Println(t.params)
 	for i, p := range t.params {
 		if rs := _fn.Call([]reflect.Value{reflect.ValueOf(i), p}); len(rs) > 0 && rs[0].Interface() != nil {
 			log.Error().
