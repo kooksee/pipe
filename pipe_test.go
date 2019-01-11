@@ -42,8 +42,30 @@ func TestMap(t *testing.T) {
 		_t := v.(t1)
 		_t.b = 100000
 		return _t
-	}).Pipe(func(a ...t1) {
+	}).Pipe(func(a ...interface{}) {
 		fmt.Println(a)
+	})
+
+	pipe.Data(nil, &t1{}).Map(func(i int, v *t1) *t1 {
+		if v == nil {
+			return nil
+		}
+
+		fmt.Println(v.b)
+
+		v.b = 100000
+
+		return v
+	}).Map(func(v *t1) *t1 {
+		if v == nil {
+			return nil
+		}
+
+		fmt.Println("map2", v.b)
+		v.b = 222000000
+		return v
+	}).Each(func(v interface{}) {
+		fmt.Println(v)
 	})
 }
 

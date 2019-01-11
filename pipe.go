@@ -10,16 +10,26 @@ type _func struct {
 }
 
 func (t *_func) Pipe(fn interface{}) *_func {
-	t.assert(fn)
+	t.assertFn(fn)
 
-	return &_func{params: reflect.ValueOf(fn).Call(t.params)}
+	_fn := reflect.ValueOf(fn)
+	_t := _fn.Type()
+
+	var _res []reflect.Value
+	for i, p := range t.params {
+		if p.Kind() == reflect.Invalid {
+			p = reflect.New(_t.In(i)).Elem()
+		}
+		_res = append(_res, p)
+	}
+	return &_func{params: _fn.Call(_res)}
 }
 
-func (t *_func) assert(fn interface{}) {
+func (t *_func) assertFn(fn interface{}) {
 	assert(fn == nil, "the func is nil")
 
 	_v := reflect.ValueOf(fn)
-	assert(_v.Kind() != reflect.Func, fmt.Sprintf("the params(%s) is not func", _v.Type().Name()))
+	assert(_v.Kind() != reflect.Func, fmt.Sprintf("the params(%s) is not func type", _v.Type().Name()))
 }
 
 func (t *_func) P(tags ...string) {
@@ -34,18 +44,50 @@ func (t *_func) P(tags ...string) {
 	fmt.Println(_p)
 }
 
-func (t *_func) Map(fn func(i int, v interface{}) interface{}) *_func {
-	t.assert(fn)
+func (t *_func) Map(fn interface{}) *_func {
+	t.assertFn(fn)
 
-	_f := &_func{}
+	_fn := reflect.ValueOf(fn)
+	_t := _fn.Type()
+	assert(_t.NumIn() > 2, "the func input num is more than 2(%d)", _t.NumIn())
+	assert(_t.NumOut() != 1, "the func output num is not equal 1(%d)", _t.NumOut())
+
+	var _res []reflect.Value
 	for i, p := range t.params {
-		_f.params = append(_f.params, reflect.ValueOf(fn(i, p.Interface())))
+		if p.Kind() == reflect.Invalid {
+			if _t.NumIn() == 1 {
+				p = reflect.New(_t.In(0)).Elem()
+			}
+
+			if _t.NumIn() == 2 {
+				p = reflect.New(_t.In(1)).Elem()
+			}
+		}
+
+		var _pi []reflect.Value
+		if _t.NumIn() == 1 {
+			_pi = []reflect.Value{p}
+		}
+
+		if _t.NumIn() == 2 {
+			_pi = []reflect.Value{reflect.ValueOf(i), p}
+		}
+
+		_r := _fn.Call(_pi)
+		assert(len(_r) != 1, "the func callback output num is not equal 1(%d)", len(_r))
+
+		if _r[0].Kind() == reflect.Invalid {
+			_r[0] = reflect.New(_t.Out(0)).Elem()
+		}
+
+		_res = append(_res, _r[0])
 	}
-	return _f
+
+	return &_func{params: _res}
 }
 
 func (t *_func) Reduce(fn interface{}) *_func {
-	t.assert(fn)
+	t.assertFn(fn)
 
 	_fn := reflect.ValueOf(fn)
 	if len(t.params) < 2 {
@@ -65,7 +107,7 @@ func (t *_func) Reduce(fn interface{}) *_func {
 }
 
 func (t *_func) Any(fn func(v interface{}) bool) bool {
-	t.assert(fn)
+	t.assertFn(fn)
 
 	for _, p := range t.params {
 		if fn(p.Interface()) {
@@ -76,7 +118,7 @@ func (t *_func) Any(fn func(v interface{}) bool) bool {
 }
 
 func (t *_func) Every(fn func(v interface{}) bool) bool {
-	t.assert(fn)
+	t.assertFn(fn)
 
 	for _, p := range t.params {
 		if !fn(p.Interface()) {
@@ -87,7 +129,7 @@ func (t *_func) Every(fn func(v interface{}) bool) bool {
 }
 
 func (t *_func) MustNotError() {
-	t.Each(func(_ int, v interface{}) {
+	t.Each(func(v interface{}) {
 		if IsError(v) {
 			panic(v.(error).Error())
 		}
@@ -95,20 +137,50 @@ func (t *_func) MustNotError() {
 }
 
 func (t *_func) FilterError() *_func {
-	return t.Filter(func(_ int, v interface{}) bool {
+	return t.Filter(func(v interface{}) bool {
 		return !IsError(v)
 	})
 }
 
-func (t *_func) Filter(fn func(i int, v interface{}) bool) *_func {
-	t.assert(fn)
+func (t *_func) Filter(fn interface{}) *_func {
+	t.assertFn(fn)
+
+	_fn := reflect.ValueOf(fn)
+	_t := _fn.Type()
+	assert(_t.NumIn() > 2, "the func input num is more than 2(%d)", _t.NumIn())
+	assert(_t.NumOut() != 1, "the func output num is not equal 1(%d)", _t.NumOut())
+	assert(_t.Out(0).Kind() != reflect.Bool, "the func output type is not bool(%s)", _t.Out(0).Kind().String())
 
 	var vs []reflect.Value
 	for i, p := range t.params {
-		if fn(i, p.Interface()) {
-			vs = append(vs, p)
+		if p.Kind() == reflect.Invalid {
+			if _t.NumIn() == 1 {
+				p = reflect.New(_t.In(0)).Elem()
+			}
+
+			if _t.NumIn() == 2 {
+				p = reflect.New(_t.In(1)).Elem()
+			}
+		}
+
+		var _pi []reflect.Value
+		if _t.NumIn() == 1 {
+			_pi = []reflect.Value{p}
+		}
+
+		if _t.NumIn() == 2 {
+			_pi = []reflect.Value{reflect.ValueOf(i), p}
+		}
+
+		_r := _fn.Call(_pi)
+		assert(len(_r) != 1, "the func callback output num is not equal 1(%d)", len(_r))
+		assert(_r[0].Kind() == reflect.Invalid, "the func callback output is nil")
+
+		if _r[0].Bool() {
+			vs = append(vs, _r[0])
 		}
 	}
+
 	return &_func{params: vs}
 }
 
@@ -123,11 +195,12 @@ func (t *_func) ToSlice() *_func {
 }
 
 func (t *_func) Each(fn interface{}) {
-	t.assert(fn)
+	t.assertFn(fn)
+
 	_fn := reflect.ValueOf(fn)
 	_t := _fn.Type()
 	assert(_t.NumIn() > 2, "the func input num is more than 2(%d)", _t.NumIn())
-	assert(_t.NumOut() != 0, "the func output num is not equal(%d)", _t.NumOut())
+	assert(_t.NumOut() != 0, "the func output num is not equal 0(%d)", _t.NumOut())
 
 	for i, p := range t.params {
 		if p.Kind() == reflect.Invalid {
