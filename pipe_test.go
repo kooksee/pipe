@@ -3,7 +3,7 @@ package pipe_test
 import (
 	"errors"
 	"fmt"
-	"lbinterapi/pipe"
+	"github.com/kooksee/pipe"
 	"testing"
 )
 

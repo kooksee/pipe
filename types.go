@@ -14,12 +14,6 @@ func assert(b bool, text string) {
 	}
 }
 
-func Default(b bool, d interface{}) interface{} {
-	if !b{
-		return
-	}
-}
-
 func If(b bool, trueVal, falseVal interface{}) interface{} {
 	if b {
 		return trueVal
