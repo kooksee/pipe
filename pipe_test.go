@@ -47,6 +47,22 @@ func TestMap(t *testing.T) {
 	})
 }
 
+func TestArray(t *testing.T) {
+	var ddd []int
+	ddd = append(ddd, 1, 2, 34)
+	pipe.DataArray(ddd).Each(func(i, n int) {
+		fmt.Println(i, n)
+	})
+
+	pipe.DataRange(1, 100, 3).P()
+	pipe.DataRange(1, 100, 3).Pipe(func(a ...int) []int {
+		fmt.Println(a)
+		return a
+	}).ToSlice().Each(func(i, n int) {
+		fmt.Println(i, n)
+	})
+}
+
 func TestReduce(t *testing.T) {
 
 	pipe.Data(t1{A: "dd", b: 1}, t1{A: "sss", b: 2}).Map(func(i int, v interface{}) interface{} {

@@ -12,6 +12,7 @@ type _func struct {
 
 func (t *_func) Pipe(fn interface{}) *_func {
 	t.assert(fn)
+
 	return &_func{params: reflect.ValueOf(fn).Call(t.params)}
 }
 
@@ -104,10 +105,21 @@ func (t *_func) Filter(fn func(i int, v interface{}) bool) *_func {
 	return &_func{params: vs}
 }
 
+func (t *_func) ToSlice() *_func {
+	var _ps []reflect.Value
+	_ds := t.params[0]
+	for i := 0; i < _ds.Len(); i++ {
+		_ps = append(_ps, _ds.Index(i))
+	}
+	t.params = _ps
+	return t
+}
+
 func (t *_func) Each(fn interface{}) interface{} {
 	t.assert(fn)
 
 	_fn := reflect.ValueOf(fn)
+	fmt.Println(t.params)
 	for i, p := range t.params {
 		if rs := _fn.Call([]reflect.Value{reflect.ValueOf(i), p}); len(rs) > 0 && rs[0].Interface() != nil {
 			log.Error().
@@ -120,6 +132,27 @@ func (t *_func) Each(fn interface{}) interface{} {
 	}
 
 	return nil
+}
+
+func DataRange(s, e, t int) *_func {
+	var _ps []reflect.Value
+	for i := s; i < e; i += t {
+		_ps = append(_ps, reflect.ValueOf(i))
+	}
+	return &_func{
+		params: _ps,
+	}
+}
+
+func DataArray(ps interface{}) *_func {
+	_d := reflect.ValueOf(ps)
+	var _ps []reflect.Value
+	for i := 0; i < _d.Len(); i++ {
+		_ps = append(_ps, _d.Index(i))
+	}
+	return &_func{
+		params: _ps,
+	}
 }
 
 func Data(ps ...interface{}) *_func {
