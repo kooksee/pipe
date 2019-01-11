@@ -10,14 +10,9 @@ type _data struct {
 }
 
 func (t *_data) String() string {
-	if len(t._values) < 1 {
+	if len(t._values) < 1 || !t._values[0].IsValid() {
 		return ""
 	}
-
-	if !t._values[0].IsValid() {
-		return ""
-	}
-
 	return t._values[0].String()
 }
 

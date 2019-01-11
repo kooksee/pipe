@@ -25,25 +25,22 @@ func TestFilter(t *testing.T) {
 }
 
 func TestMap(t *testing.T) {
-	pipe.Data(t1{A: "dd", b: 1}, t1{A: "sss", b: 2}).Map(func(i int, v interface{}) interface{} {
-		_t := v.(t1)
-		_t.b = 100000
-		return _t
+	pipe.Data(t1{A: "dd", b: 1}, t1{A: "sss", b: 2}).Map(func(i int, v t1) t1 {
+		v.b = 100000
+		return v
 	}).P("test map")
 
-	pipe.Data(t1{A: "dd", b: 1}, t1{A: "sss", b: 2}).Map(func(i int, v interface{}) interface{} {
-		_t := v.(t1)
-		_t.b = 100000
-		return _t
-	}).Each(func(i int, a ...interface{}) {
+	pipe.Data(t1{A: "dd", b: 1}, t1{A: "sss", b: 2}).Map(func(i int, v t1) t1 {
+		v.b = 100000
+		return v
+	}).Each(func(i int, a ...t1) {
 		fmt.Println(a)
 	})
 
-	pipe.Data(t1{A: "dd", b: 1}, t1{A: "sss", b: 2}).Map(func(i int, v interface{}) interface{} {
-		_t := v.(t1)
-		_t.b = 100000
-		return _t
-	}).Pipe(func(a ...interface{}) {
+	pipe.Data(t1{A: "dd", b: 1}, t1{A: "sss", b: 2}).Map(func(i int, v t1) t1 {
+		v.b = 100000
+		return v
+	}).Pipe(func(a t1, aa t1) {
 		fmt.Println(a)
 	})
 
@@ -65,7 +62,7 @@ func TestMap(t *testing.T) {
 		fmt.Println("map2", v.b)
 		v.b = 222000000
 		return v
-	}).Each(func(v interface{}) {
+	}).Each(func(v *t1) {
 		fmt.Println(v)
 	})
 }
@@ -78,10 +75,10 @@ func TestArray(t *testing.T) {
 	})
 
 	pipe.DataRange(1, 100, 3).P()
-	pipe.DataRange(1, 100, 3).Pipe(func(a ...int) []int {
+	pipe.DataRange(1, 100, 3).Map(func(a int) int {
 		fmt.Println(a)
 		return a
-	}).ToSlice().Each(func(i, n int) {
+	}).Each(func(i, n int) {
 		fmt.Println(i, n)
 	})
 }
@@ -97,14 +94,12 @@ func TestReduce(t *testing.T) {
 		fmt.Println(a)
 	})
 
-	pipe.Data(t1{A: "dd", b: 1}, t1{A: "sss", b: 2}, t1{A: "sss", b: 2}).Map(func(i int, v t1) t1 {
+	fmt.Println(pipe.Data(t1{A: "dd", b: 1}, t1{A: "sss", b: 2}, t1{A: "sss", b: 2}).Map(func(i int, v t1) t1 {
 		v.b = 100000
 		return v
 	}).Reduce(func(s t1, v t1) t1 {
 		return t1{b: s.b + v.b, A: s.A + v.A}
-	}).Each(func(a interface{}) {
-		fmt.Println(a)
-	})
+	}).ToData().Json())
 }
 
 func TestEach(t *testing.T) {
@@ -129,9 +124,9 @@ func TestPipe(t *testing.T) {
 		fmt.Println("callback ", a, b)
 	})
 
-	pipe.Data(1, 2, 3, 4).Pipe(func(a ...int) {
-		fmt.Println(a)
-	})
+	pipe.Data(1, 2, 3, 4, nil).Pipe(func(a, b, c, d int, e error) {
+		fmt.Println(a, b, c, d, e)
+	}).P("test pipe")
 }
 
 func TestIsError(t *testing.T) {
@@ -152,4 +147,12 @@ func TestToData(t *testing.T) {
 	fmt.Println(pipe.DataFromArray(strings.Split(a, "*")).ToData().String())
 	fmt.Println(pipe.DataFromArray(strings.Split(a, "*")).ToData().Json())
 	fmt.Println(pipe.Data(1, 2, 3, "", nil, &a).ToData().Json())
+	pipe.Data(1, 2, 3, "", nil, &a).P()
+}
+
+func TestIf(t *testing.T) {
+	a := "0 */2 * * * *"
+	fmt.Println(pipe.If(true, pipe.Fn(strings.Split, a, "*"), 2))
+	fmt.Println(pipe.If(false, pipe.Fn(fmt.Println, "1", 2), 2))
+	fmt.Println(pipe.If(true, pipe.Fn(fmt.Println, "1", 2), 2))
 }
