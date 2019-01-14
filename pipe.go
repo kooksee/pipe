@@ -217,7 +217,7 @@ func (t *_func) Each(fn interface{}) {
 }
 
 func DataRange(s, e, t int) *_func {
-	assert(e > s, "")
+	assert(s > e, "")
 
 	var _ps []reflect.Value
 	for i := s; i < e; i += t {
