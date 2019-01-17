@@ -10,7 +10,7 @@ type _data struct {
 }
 
 func (t *_data) String() string {
-	if len(t._values) < 1 || !t._values[0].IsValid() {
+	if len(t._values) < 1 || !t._values[0].IsValid() || t._values[0].Kind() != reflect.String {
 		return ""
 	}
 	return t._values[0].String()

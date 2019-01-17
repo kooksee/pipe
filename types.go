@@ -8,7 +8,7 @@ import (
 
 func ToInt(p string) int {
 	r, err := strconv.Atoi(p)
-	assert(err != nil, fmt.Sprintf("can not convert %s to int,error(%s)", p, err))
+	assert(err != nil, "can not convert %s to int,error(%s)", p, err)
 	return r
 }
 

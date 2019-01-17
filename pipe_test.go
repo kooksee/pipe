@@ -156,3 +156,35 @@ func TestIf(t *testing.T) {
 	fmt.Println(pipe.If(false, pipe.Fn(fmt.Println, "1", 2), 2))
 	fmt.Println(pipe.If(true, pipe.Fn(fmt.Println, "1", 2), 2))
 }
+
+func TestTry(t *testing.T) {
+	t.Run("test panic", func(t *testing.T) {
+		pipe.Try(func() {
+			panic(errors.New("test errors"))
+		}).Then(func(d interface{}) {
+			fmt.Println("get data", d)
+		}).Catch(func(err error) {
+			fmt.Println("get error", err.Error())
+		})
+	})
+
+	t.Run("test data", func(t *testing.T) {
+		pipe.Try(func() error {
+			return errors.New("test errors")
+		}).Then(func(d error) {
+			fmt.Println("get data", d.Error())
+		}).Catch(func(err error) {
+			fmt.Println("get error", err.Error())
+		})
+	})
+
+	t.Run("test data without data", func(t *testing.T) {
+		pipe.Try(func() error {
+			return nil
+		}).Then(func(d error) {
+			fmt.Println("get data", d)
+		}).Catch(func(err error) {
+			fmt.Println("get error", err.Error())
+		})
+	})
+}
