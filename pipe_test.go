@@ -187,4 +187,14 @@ func TestTry(t *testing.T) {
 			fmt.Println("get error", err.Error())
 		})
 	})
+
+	t.Run("test data without data 1", func(t *testing.T) {
+		//pipe.Try(func() []interface{} {
+		//	return []string{"1", "2", "3"}
+		//}).Then(func(d ...string) {
+		//	fmt.Println("get data", d)
+		//}).Catch(func(err error) {
+		//	fmt.Println("get error", err.Error())
+		//})
+	})
 }

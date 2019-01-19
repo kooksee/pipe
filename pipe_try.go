@@ -1,6 +1,7 @@
 package pipe
 
 import (
+	"github.com/juju/errors"
 	"reflect"
 )
 
@@ -26,8 +27,8 @@ func (t *_try) Then(fn interface{}) *_try {
 	_fn := reflect.ValueOf(fn)
 	_t := _fn.Type()
 
-	assert(len(t.params) != _t.NumIn(), "the params num is not match(%d,%d)", len(t.params), _t.NumIn())
-	assert(_t.NumOut() != 0, "the output params num is not 0(%d)", _t.NumOut())
+	//assert(len(t.params) != _t.NumIn(), "the params num is not match(%d,%d)", len(t.params), _t.NumIn())
+	//assert(_t.NumOut() != 0, "the output params num is not 0(%d)", _t.NumOut())
 
 	var _res []reflect.Value
 	for i, p := range t.params {
@@ -56,7 +57,12 @@ func Try(fn interface{}) *_try {
 	defer func() {
 		defer func() {
 			if r := recover(); r != nil {
-				t.err = r.(error)
+				switch r.(type) {
+				case error:
+					t.err = r.(error)
+				case string:
+					t.err = errors.New(r.(string))
+				}
 			}
 		}()
 		t.params = reflect.ValueOf(fn).Call([]reflect.Value{})
