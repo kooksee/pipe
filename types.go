@@ -22,20 +22,6 @@ func assert(b bool, text string, args ...interface{}) {
 	}
 }
 
-func IfFn(b bool, trueVal, falseVal interface{}) {
-	_t1 := reflect.ValueOf(trueVal)
-	_t2 := reflect.ValueOf(falseVal)
-
-	assert(_t1.Kind() != reflect.Func, "the output must be one")
-	assert(_t2.Kind() != reflect.Func, "the output must be one")
-
-	if b {
-		_t1.Call([]reflect.Value{})
-	} else {
-		_t2.Call([]reflect.Value{})
-	}
-}
-
 func If(b bool, trueVal, falseVal interface{}) interface{} {
 	_t1 := reflect.ValueOf(trueVal)
 	_t2 := reflect.ValueOf(falseVal)
@@ -99,4 +85,11 @@ func Fn(f interface{}, params ...interface{}) func() interface{} {
 
 		return out[0]
 	}
+}
+
+func assertFn(fn interface{}) {
+	assert(fn == nil, "the func is nil")
+
+	_v := reflect.ValueOf(fn)
+	assert(_v.Kind() != reflect.Func, "the params(%s) is not func type", _v.Type())
 }

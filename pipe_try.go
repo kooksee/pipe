@@ -1,20 +1,13 @@
 package pipe
 
 import (
-	"github.com/juju/errors"
+	"errors"
 	"reflect"
 )
 
 type _try struct {
 	err    error
 	params []reflect.Value
-}
-
-func assertFn(fn interface{}) {
-	assert(fn == nil, "the func is nil")
-
-	_v := reflect.ValueOf(fn)
-	assert(_v.Kind() != reflect.Func, "the params(%s) is not func type", _v.Type())
 }
 
 func (t *_try) Then(fn interface{}) *_try {

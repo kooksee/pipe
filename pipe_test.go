@@ -151,10 +151,12 @@ func TestToData(t *testing.T) {
 }
 
 func TestIf(t *testing.T) {
-	a := "0 */2 * * * *"
-	fmt.Println(pipe.If(true, pipe.Fn(strings.Split, a, "*"), 2))
-	fmt.Println(pipe.If(false, pipe.Fn(fmt.Println, "1", 2), 2))
-	fmt.Println(pipe.If(true, pipe.Fn(fmt.Println, "1", 2), 2))
+	t.Run("懒加载", func(t *testing.T) {
+		a := "0 */2 * * * *"
+		fmt.Println(pipe.If(true, pipe.Fn(strings.Split, a, "*"), 2))
+		fmt.Println(pipe.If(false, pipe.Fn(fmt.Println, "1", 2), 2))
+		fmt.Println(pipe.If(true, pipe.Fn(fmt.Println, "1", 2), 2))
+	})
 }
 
 func TestTry(t *testing.T) {

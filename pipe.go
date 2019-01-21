@@ -10,7 +10,7 @@ type _func struct {
 }
 
 func (t *_func) Pipe(fn interface{}) *_func {
-	t.assertFn(fn)
+	assertFn(fn)
 
 	_fn := reflect.ValueOf(fn)
 	_t := _fn.Type()
@@ -25,13 +25,6 @@ func (t *_func) Pipe(fn interface{}) *_func {
 		_res = append(_res, p)
 	}
 	return &_func{params: _fn.Call(_res)}
-}
-
-func (t *_func) assertFn(fn interface{}) {
-	assert(fn == nil, "the func is nil")
-
-	_v := reflect.ValueOf(fn)
-	assert(_v.Kind() != reflect.Func, "the params(%s) is not func type", _v.Type())
 }
 
 func (t *_func) P(tags ...string) {
@@ -55,7 +48,7 @@ func (t *_func) ToData() *_data {
 }
 
 func (t *_func) Map(fn interface{}) *_func {
-	t.assertFn(fn)
+	assertFn(fn)
 
 	_fn := reflect.ValueOf(fn)
 	_t := _fn.Type()
@@ -81,7 +74,7 @@ func (t *_func) Map(fn interface{}) *_func {
 }
 
 func (t *_func) Reduce(fn interface{}) *_func {
-	t.assertFn(fn)
+	assertFn(fn)
 
 	_fn := reflect.ValueOf(fn)
 	_t := _fn.Type()
@@ -122,7 +115,7 @@ func (t *_func) Reduce(fn interface{}) *_func {
 }
 
 func (t *_func) Any(fn func(v interface{}) bool) bool {
-	t.assertFn(fn)
+	assertFn(fn)
 
 	for _, p := range t.params {
 		if fn(If(!p.IsValid(), nil, Fn(p.Interface))) {
@@ -133,7 +126,7 @@ func (t *_func) Any(fn func(v interface{}) bool) bool {
 }
 
 func (t *_func) Every(fn func(v interface{}) bool) bool {
-	t.assertFn(fn)
+	assertFn(fn)
 
 	for _, p := range t.params {
 		if !fn(If(!p.IsValid(), nil, Fn(p.Interface))) {
@@ -162,7 +155,7 @@ func (t *_func) FilterError() *_func {
 }
 
 func (t *_func) Filter(fn interface{}) *_func {
-	t.assertFn(fn)
+	assertFn(fn)
 
 	_fn := reflect.ValueOf(fn)
 	_t := _fn.Type()
@@ -200,7 +193,7 @@ func (t *_func) ToSlice() *_func {
 }
 
 func (t *_func) Each(fn interface{}) {
-	t.assertFn(fn)
+	assertFn(fn)
 
 	_fn := reflect.ValueOf(fn)
 	_t := _fn.Type()
