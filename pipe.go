@@ -40,7 +40,7 @@ func (t *_func) P(tags ...string) {
 	if len(tags) > 0 {
 		fmt.Println(tags[0])
 	}
-	fmt.Printf("\n\n")
+	fmt.Print("\n\n")
 }
 
 func (t *_func) ToData() *_data {

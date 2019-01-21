@@ -19,9 +19,17 @@ func TestP(t *testing.T) {
 }
 
 func TestFilter(t *testing.T) {
-	pipe.Data(t1{A: "dd", b: 1}, &t1{A: "sss", b: 2}).Filter(func(i int, v interface{}) bool {
-		return !pipe.IsPtr(v)
-	}).P("test filter")
+	t.Run("test filter", func(t *testing.T) {
+		pipe.Data(t1{A: "dd", b: 1}, &t1{A: "sss", b: 2}).Filter(func(i int, v interface{}) bool {
+			return !pipe.IsPtr(v)
+		}).P()
+	})
+
+	t.Run("test filter type", func(t *testing.T) {
+		pipe.Data(&t1{A: "dd", b: 1}, &t1{A: "sss", b: 2}).Filter(func(v *t1) bool {
+			return v.b > 1
+		}).P()
+	})
 }
 
 func TestMap(t *testing.T) {

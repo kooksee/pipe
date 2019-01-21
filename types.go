@@ -1,6 +1,7 @@
 package pipe
 
 import (
+	"encoding/json"
 	"fmt"
 	"reflect"
 	"strconv"
@@ -92,4 +93,14 @@ func assertFn(fn interface{}) {
 
 	_v := reflect.ValueOf(fn)
 	assert(_v.Kind() != reflect.Func, "the params(%s) is not func type", _v.Type())
+}
+
+func P(d ...interface{}) {
+	for _, i := range d {
+		dt, err := json.MarshalIndent(i, "", "\t")
+		if err != nil {
+			panic(err.Error())
+		}
+		fmt.Println(reflect.ValueOf(i).String(), "->", string(dt))
+	}
 }
