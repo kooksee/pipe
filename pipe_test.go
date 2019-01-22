@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/kooksee/pipe"
+	"reflect"
 	"strings"
 	"testing"
 )
@@ -207,4 +208,25 @@ func TestTry(t *testing.T) {
 		//	fmt.Println("get error", err.Error())
 		//})
 	})
+}
+
+func TestSetInterface(t *testing.T) {
+	_fn := func(in interface{}, a interface{}) {
+		fmt.Println(in, a)
+		reflect.ValueOf(in).Elem().Set(reflect.ValueOf(a))
+	}
+	a := 1
+	b := 2
+	_fn(&a, b)
+	fmt.Println(a, b)
+}
+
+func TestExpr(t *testing.T) {
+	pipe.Data(1, 2, 3, 4, nil).Pipe(func(a, b, c, d int, e error) {
+		fmt.Println(a, b, c, d, e)
+	}).P("test pipe")
+
+	fmt.Println(pipe.Data(1, 2, 3, 4, nil).FilterExp(`it == nil`).ToData().Json())
+	fmt.Println(pipe.Data(&t1{A: "1", b: 2}, &t1{A: "1", b: 3}).FilterExp(`it.A == "1"`).ToData().Json())
+	fmt.Println(pipe.Data(&t1{A: "1", b: 2}, &t1{A: "1", b: 3}).MapExp(`it.A == "1"`).ToData().Json())
 }

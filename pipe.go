@@ -2,6 +2,7 @@ package pipe
 
 import (
 	"fmt"
+	"github.com/antonmedv/expr"
 	"reflect"
 )
 
@@ -45,6 +46,31 @@ func (t *_func) P(tags ...string) {
 
 func (t *_func) ToData() *_data {
 	return &_data{_values: t.params}
+}
+
+func (t *_func) MapExp(code string) *_func {
+	_ps := make(map[string]interface{})
+
+	var vs []reflect.Value
+	for _, p := range t.params {
+		if !p.IsValid() {
+			_ps["it"] = nil
+		} else {
+			_ps["it"] = p.Interface()
+		}
+
+		output, err := expr.Eval(code, _ps)
+		assert(err != nil, "FilterExp error(%s)", err)
+
+		out, ok := output.(bool)
+		assert(!ok, "output type error")
+
+		if out {
+			vs = append(vs, p)
+		}
+	}
+
+	return &_func{params: vs}
 }
 
 func (t *_func) Map(fn interface{}) *_func {
@@ -152,6 +178,31 @@ func (t *_func) FilterError() *_func {
 	return t.Filter(func(v interface{}) bool {
 		return !IsError(v)
 	})
+}
+
+func (t *_func) FilterExp(filter string) *_func {
+	_ps := make(map[string]interface{})
+
+	var vs []reflect.Value
+	for _, p := range t.params {
+		if !p.IsValid() {
+			_ps["it"] = nil
+		} else {
+			_ps["it"] = p.Interface()
+		}
+
+		output, err := expr.Eval(filter, _ps)
+		assert(err != nil, "FilterExp error(%s)", err)
+
+		out, ok := output.(bool)
+		assert(!ok, "output type error")
+
+		if out {
+			vs = append(vs, p)
+		}
+	}
+
+	return &_func{params: vs}
 }
 
 func (t *_func) Filter(fn interface{}) *_func {
