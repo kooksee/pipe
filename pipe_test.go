@@ -230,3 +230,17 @@ func TestExpr(t *testing.T) {
 	fmt.Println(pipe.Data(&t1{A: "1", b: 2}, &t1{A: "1", b: 3}).FilterExp(`it.A == "1"`).ToData().Json())
 	fmt.Println(pipe.Data(&t1{A: "1", b: 2}, &t1{A: "1", b: 3}).MapExp(`it.A == "1"`).ToData().Json())
 }
+
+type M struct {
+	A  string `json:"a"`
+	A1 string `json:"a1"`
+	A2 string `json:"a2"`
+}
+
+func (t *M) Name() string {
+	return "m"
+}
+
+func TestInsert(t *testing.T) {
+	fmt.Println(pipe.Insert(&M{A: "s"}))
+}
