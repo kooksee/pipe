@@ -229,6 +229,9 @@ func TestExpr(t *testing.T) {
 	fmt.Println(pipe.Data(1, 2, 3, 4, nil).FilterExp(`it == nil`).ToData().Json())
 	fmt.Println(pipe.Data(&t1{A: "1", b: 2}, &t1{A: "1", b: 3}).FilterExp(`it.A == "1"`).ToData().Json())
 	fmt.Println(pipe.Data(&t1{A: "1", b: 2}, &t1{A: "1", b: 3}).MapExp(`it.A == "1"`).ToData().Json())
+
+	var _m []*t1
+	fmt.Println(pipe.Data(&t1{A: "1", b: 2}, &t1{A: "1", b: 3}).MapExp(`it.A == "1"`).ToData().Value(&_m))
 }
 
 type M struct {

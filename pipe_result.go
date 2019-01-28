@@ -16,6 +16,10 @@ func (t *_data) String() string {
 	return t._values[0].String()
 }
 
+func (t *_data) Value(v interface{}) error {
+	return json.Unmarshal([]byte(t.Json()), v)
+}
+
 func (t *_data) Json() string {
 	var _res []interface{}
 	for _, _p := range t._values {
