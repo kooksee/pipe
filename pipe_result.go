@@ -16,7 +16,7 @@ func (t *_data) String() string {
 	return t._values[0].String()
 }
 
-func (t *_data) Value() interface{} {
+func (t *_data) Interface() interface{} {
 	if len(t._values) < 1 {
 		return nil
 	}

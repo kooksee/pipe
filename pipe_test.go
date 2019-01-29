@@ -233,7 +233,7 @@ func TestExpr(t *testing.T) {
 	_a := pipe.
 		Data(nil, &t1{A: "1", b: 2}, &t1{A: "1", b: 3}).
 		ToData().
-		Value().([]*t1)
+		Interface().([]*t1)
 	fmt.Println(_a)
 	fmt.Println(_a[1].A)
 }
@@ -266,4 +266,12 @@ func TestSortBy(t *testing.T) {
 	for _, _a := range aa {
 		fmt.Println(_a, len(_a), len(aa))
 	}
+
+	fmt.Println(pipe.Data(1, 11, 2).SortBy(func(a, b int) bool {
+		return a > b
+	}).ToData().Json())
+
+	fmt.Println(pipe.Data(1, 11, 2).SortBy(func(a, b int) bool {
+		return a > b
+	}).ToData().Interface())
 }

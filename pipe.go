@@ -10,22 +10,23 @@ type _func struct {
 	params []reflect.Value
 }
 
-func (t *_func) SortBy(desc bool, fn func(i, j int) bool) *_func {
-	assertFn(fn)
+func (t *_func) SortBy(swap interface{}) *_func {
+	assertFn(swap)
 
-	_fn := reflect.ValueOf(fn)
+	_fn := reflect.ValueOf(swap)
 	_t := _fn.Type()
+	assert(_t.NumIn() != 2, "the func input num is more than 2(%d)", _t.NumIn())
+	assert(_t.Out(0).Kind() != reflect.Bool, "the func output type is not bool(%s)", _t.Out(0).Kind().String())
 
-	assert(len(t.params) != _t.NumIn(), "the params num is not match(%d,%d)", len(t.params), _t.NumIn())
-
-	var _res []reflect.Value
-	for i, p := range t.params {
-		if !p.IsValid() {
-			p = reflect.New(_t.In(i)).Elem()
+	for i := 0; i < len(t.params); i++ {
+		if !t.params[i].IsValid() {
+			t.params[i] = reflect.Zero(_t.In(0))
 		}
-		_res = append(_res, p)
 	}
-	return &_func{params: _fn.Call(_res)}
+
+	t.params = reflectValueSlice{data: t.params, swap: _fn}.Sort()
+
+	return t
 }
 
 func (t *_func) Pipe(fn interface{}) *_func {
