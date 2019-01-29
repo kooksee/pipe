@@ -247,3 +247,19 @@ func (t *M) Name() string {
 func TestInsert(t *testing.T) {
 	fmt.Println(pipe.Insert(&M{A: "s"}))
 }
+
+func TestSortBy(t *testing.T) {
+	if a, ok := pipe.SortBy([]string{"11", "2", "3"}, func(a, b string) bool {
+		return strings.Compare(a, b) > 0
+	}).([]string); ok {
+		fmt.Println(a)
+	}
+
+	aa := pipe.SortBy([]string{"11", "2", "31"}, func(a, b string) bool {
+		return strings.Compare(a, b) < 0
+	}).([]string)
+
+	for _, _a := range aa {
+		fmt.Println(_a, len(_a), len(aa))
+	}
+}

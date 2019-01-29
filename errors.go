@@ -6,7 +6,7 @@ import (
 
 func Assert(b bool, text string, args ...interface{}) {
 	if b {
-		panic(errors.Errorf(text, args).Error())
+		panic(errors.Errorf(text, args...).Error())
 	}
 }
 
