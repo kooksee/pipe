@@ -16,8 +16,32 @@ func (t *_data) String() string {
 	return t._values[0].String()
 }
 
-func (t *_data) Value(v interface{}) error {
-	return json.Unmarshal([]byte(t.Json()), v)
+func (t *_data) Value() interface{} {
+	if len(t._values) < 1 {
+		return nil
+	}
+
+	var _t reflect.Type
+	for _, _v := range t._values {
+		if _v.IsValid() {
+			_t = _v.Type()
+			break
+		}
+	}
+
+	if _t == nil {
+		return nil
+	}
+
+	for i := 0; i < len(t._values); i++ {
+		if !t._values[i].IsValid() {
+			t._values[i] = reflect.Zero(_t)
+		}
+	}
+
+	_rst := reflect.MakeSlice(reflect.SliceOf(_t), 0, len(t._values))
+	_rst = reflect.Append(_rst, t._values...)
+	return _rst.Interface()
 }
 
 func (t *_data) Json() string {
