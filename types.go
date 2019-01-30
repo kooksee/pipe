@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"reflect"
 	"strconv"
+	"time"
 )
 
 func ToInt(p string) int {
@@ -103,4 +104,13 @@ func P(d ...interface{}) {
 		}
 		fmt.Println(reflect.ValueOf(i).String(), "->", string(dt))
 	}
+}
+
+func NowFormat() string {
+	return time.Now().Format("2006-01-02 15:04:05")
+}
+
+func TodayTimestamp() uint64 {
+	n := time.Now().Unix()
+	return uint64(n - n%(24*60*60) - 8*60*60 - 1)
 }

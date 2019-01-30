@@ -285,3 +285,7 @@ func TestSortBy(t *testing.T) {
 		return a > b
 	}).ToData().Interface())
 }
+
+func TestGroupBy(t *testing.T) {
+	pipe.Data(nil, &t1{A: "1", b: 2}, map[string]interface{}{"A": "2"}, t1{A: "1", b: 2}, &t1{A: "2", b: 3}, &t1{A: "2", b: 3}).GroupBy("A").Echo()
+}
