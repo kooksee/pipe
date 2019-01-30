@@ -16,6 +16,10 @@ func (t *_data) String() string {
 	return t._values[0].String()
 }
 
+func (t *_data) Raw() []reflect.Value {
+	return t._values
+}
+
 func (t *_data) Interface() interface{} {
 	if len(t._values) < 1 {
 		return nil

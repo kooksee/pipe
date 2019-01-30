@@ -17,17 +17,15 @@ func SortBy(data interface{}, swap interface{}) interface{} {
 	var _ps []reflect.Value
 	for i := 0; i < _d.Len(); i++ {
 		if !_d.Index(i).IsValid() {
-			_ps = append(_ps, reflect.New(_t.In(0).Elem()))
-			continue
+			_ps = append(_ps, reflect.Zero(_t.In(0)))
+		} else {
+			_ps = append(_ps, _d.Index(i))
 		}
-		_ps = append(_ps, _d.Index(i))
 	}
 
-	_st := reflectValueSlice{data: _ps, swap: _fn}
-	_st.Sort()
-
+	_st := reflectValueSlice{data: _ps, swap: _fn}.Sort()
 	_rst := reflect.MakeSlice(_d.Type(), 0, _d.Len())
-	_rst = reflect.Append(_rst, _st.data...)
+	_rst = reflect.Append(_rst, _st...)
 
 	return _rst.Interface()
 }

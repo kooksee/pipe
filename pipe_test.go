@@ -267,6 +267,16 @@ func TestSortBy(t *testing.T) {
 		fmt.Println(_a, len(_a), len(aa))
 	}
 
+	fmt.Println("nil test", pipe.
+		Data(nil, &t1{A: "1", b: 2}, &t1{A: "1", b: 3}).
+		SortBy(func(a, b *t1) bool {
+			if a == nil || b == nil {
+				return true
+			}
+
+			return a.b > b.b
+		}).ToData().Interface())
+
 	fmt.Println(pipe.Data(1, 11, 2).SortBy(func(a, b int) bool {
 		return a > b
 	}).ToData().Json())
