@@ -1,9 +1,11 @@
 package pipe_test
 
 import (
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"github.com/kooksee/pipe"
+	"math/big"
 	"reflect"
 	"strings"
 	"testing"
@@ -168,48 +170,6 @@ func TestIf(t *testing.T) {
 	})
 }
 
-func TestTry(t *testing.T) {
-	t.Run("test panic", func(t *testing.T) {
-		pipe.Try(func() {
-			panic(errors.New("test errors"))
-		}).Then(func(d interface{}) {
-			fmt.Println("get data", d)
-		}).Catch(func(err error) {
-			fmt.Println("get error", err.Error())
-		})
-	})
-
-	t.Run("test data", func(t *testing.T) {
-		pipe.Try(func() error {
-			return errors.New("test errors")
-		}).Then(func(d error) {
-			fmt.Println("get data", d.Error())
-		}).Catch(func(err error) {
-			fmt.Println("get error", err.Error())
-		})
-	})
-
-	t.Run("test data without data", func(t *testing.T) {
-		pipe.Try(func() error {
-			return nil
-		}).Then(func(d error) {
-			fmt.Println("get data", d)
-		}).Catch(func(err error) {
-			fmt.Println("get error", err.Error())
-		})
-	})
-
-	t.Run("test data without data 1", func(t *testing.T) {
-		//pipe.Try(func() []interface{} {
-		//	return []string{"1", "2", "3"}
-		//}).Then(func(d ...string) {
-		//	fmt.Println("get data", d)
-		//}).Catch(func(err error) {
-		//	fmt.Println("get error", err.Error())
-		//})
-	})
-}
-
 func TestSetInterface(t *testing.T) {
 	_fn := func(in interface{}, a interface{}) {
 		fmt.Println(in, a)
@@ -288,4 +248,13 @@ func TestSortBy(t *testing.T) {
 
 func TestGroupBy(t *testing.T) {
 	pipe.Data(nil, &t1{A: "1", b: 2}, map[string]interface{}{"A": "2"}, t1{A: "1", b: 2}, &t1{A: "2", b: 3}, &t1{A: "2", b: 3}).GroupBy("A").Echo()
+}
+
+func TestName123(t *testing.T) {
+	a := "1a38753878917df87acfac"
+	b, err := hex.DecodeString(a)
+	if err != nil {
+		panic(err.Error())
+	}
+	fmt.Println(big.NewInt(0).SetBytes(b).Int64())
 }

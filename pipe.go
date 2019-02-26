@@ -10,6 +10,23 @@ type _func struct {
 	params []reflect.Value
 }
 
+func (t *_func) SortByName(name string, desc bool) *_func {
+
+	//_fn := func(a, b reflect.Value) {
+	//
+	//}
+
+	//for i := 0; i < len(t.params); i++ {
+	//	if !t.params[i].IsValid() {
+	//		t.params[i] = reflect.Zero(_t.In(0))
+	//	}
+	//}
+
+	//t.params = reflectValueSlice{data: t.params, swap: _fn}.Sort()
+
+	return nil
+}
+
 func (t *_func) SortBy(swap interface{}) *_func {
 	assertFn(swap)
 
