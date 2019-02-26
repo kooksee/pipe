@@ -208,10 +208,6 @@ func (t *M) Name() string {
 	return "m"
 }
 
-func TestInsert(t *testing.T) {
-	fmt.Println(pipe.Insert(&M{A: "s"}))
-}
-
 func TestSortBy(t *testing.T) {
 	if a, ok := pipe.SortBy([]string{"11", "2", "3"}, func(a, b string) bool {
 		return strings.Compare(a, b) > 0
